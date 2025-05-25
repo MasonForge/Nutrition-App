@@ -52,7 +52,7 @@ else:
 tdee = bmr * activity_levels[activity]
 default_adjustment = -500 if goal == "Lose Weight" else 500
 
-st.subheader("\ud83d\udcca Results")
+st.subheader("Results")
 st.write(f"BMR: **{int(bmr)} kcal/day**")
 st.write(f"TDEE (Maintenance): **{int(tdee)} kcal/day**")
 
