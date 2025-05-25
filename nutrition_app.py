@@ -8,7 +8,7 @@ st.set_page_config(page_title="Eat4Goals", layout="centered")
 
 # ----- PAGE SETUP -----
 st.title("Eat4Goals — Nutrition Calculator")
-st.warning("\u26a0\ufe0f Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. Some numbers are rounded for clarity and may not reflect exact daily fluctuations.")
+st.warning("⚠️ Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. Some numbers are rounded for clarity and may not reflect exact daily fluctuations.")
 
 # ----- UNIT SELECTION -----
 units = st.radio("Units", ["Metric (kg/cm)", "Imperial (lbs/in)"])
@@ -73,7 +73,7 @@ if override:
     calorie_change_per_day = calorie_total / days_available
     target_calories = tdee + calorie_change_per_day
 
-    st.warning("⚠️ User Override Active: You are manually adjusting your calorie goal.")
+    st.warning("⚠️ Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
     st.write(f"🎯 To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
 
     projected_weights = [weight + (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
