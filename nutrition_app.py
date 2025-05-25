@@ -1,6 +1,5 @@
 import streamlit as st
 import datetime
-import math
 import plotly.graph_objs as go
 
 # ----- PAGE SETUP -----
@@ -19,9 +18,13 @@ if units == "Imperial (lbs/in)":
     height_in = st.number_input("Height (inches)", min_value=48.0, value=68.0)
     weight = weight_lbs / 2.20462
     height = height_in * 2.54
+    display_weight = weight_lbs
+    weight_unit = "lbs"
 else:
     weight = st.number_input("Weight (kg)", min_value=30.0, value=70.0)
     height = st.number_input("Height (cm)", min_value=100.0, value=175.0)
+    display_weight = weight
+    weight_unit = "kg"
 
 activity_levels = {
     "Sedentary (little/no exercise)": 1.2,
@@ -33,10 +36,8 @@ activity_levels = {
 activity = st.selectbox("Activity Level", list(activity_levels.keys()))
 goal = st.radio("Goal", ["Maintain", "Lose Weight", "Gain Muscle"])
 
-# ----- GOAL TIMING AND TARGET -----
-start_date = st.date_input("Start Date", datetime.date.today())
-end_date = st.date_input("Goal Date", datetime.date.today() + datetime.timedelta(days=60))
-target_weight = st.number_input("Target Weight", min_value=30.0, value=weight, help="Use the same units as your original weight.")
+target_weight = st.number_input(f"Target Weight ({weight_unit})", min_value=30.0, value=display_weight)
+override = st.checkbox("Enable User Override")
 
 # ----- CALCULATIONS -----
 if gender == "Male":
@@ -45,37 +46,51 @@ else:
     bmr = 10 * weight + 6.25 * height - 5 * age - 161
 
 tdee = bmr * activity_levels[activity]
-default_adjustment = 500  # kcal/day
-
-# Calculate required calorie shift
-weight_diff_kg = weight - target_weight
-calorie_total = weight_diff_kg * 7700  # 7700 kcal per kg of fat
-days_available = max((end_date - start_date).days, 1)
-calorie_change_per_day = calorie_total / days_available
-recommended_adjustment = -default_adjustment if goal == "Lose Weight" else default_adjustment
+default_adjustment = -500 if goal == "Lose Weight" else 500
 
 st.subheader("📊 Results")
 st.write(f"BMR: **{int(bmr)} kcal/day**")
 st.write(f"TDEE (Maintenance): **{int(tdee)} kcal/day**")
 
-# ----- USER OVERRIDE -----
-override = st.checkbox("Enable User Override")
-
-if override:
-    custom_adjust = st.number_input("Custom Calorie Adjustment per Day", value=int(calorie_change_per_day))
-    st.warning("⚠️ User Override Active: You are manually adjusting your calorie goal. Please consult a qualified health professional before making any changes to your diet or nutrition plan.")
-    final_target = tdee + custom_adjust
+# Convert display units back to kg
+if units == "Imperial (lbs/in)":
+    target_weight_kg = target_weight / 2.20462
 else:
-    final_target = tdee + calorie_change_per_day
+    target_weight_kg = target_weight
 
-st.write(f"🎯 Target Daily Calories: **{int(final_target)} kcal/day**")
+# ----- OVERRIDE ON: Set goal date, calculate calories needed -----
+if override:
+    goal_date = st.date_input("Goal Date", datetime.date.today() + datetime.timedelta(days=60))
+    start_date = datetime.date.today()
+    days_available = max((goal_date - start_date).days, 1)
 
-# ----- GRAPH: PROJECTED WEIGHT CHANGE -----
-projected_weights = [weight - (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
-dates = [start_date + datetime.timedelta(days=i) for i in range(days_available + 1)]
+    weight_diff_kg = weight - target_weight_kg
+    calorie_total = weight_diff_kg * 7700
+    calorie_change_per_day = calorie_total / days_available
+    target_calories = tdee + calorie_change_per_day
 
+    st.warning("⚠️ User Override Active: You are manually adjusting your calorie goal. Please consult a qualified health professional before making any changes to your diet or nutrition plan.")
+
+    st.write(f"🎯 To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
+    projected_weights = [weight - (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
+    dates = [start_date + datetime.timedelta(days=i) for i in range(days_available + 1)]
+
+# ----- OVERRIDE OFF: Use 500 kcal/day and calculate time to reach goal -----
+else:
+    calorie_change_per_day = default_adjustment
+    weight_diff_kg = weight - target_weight_kg
+    calorie_total = weight_diff_kg * 7700
+    days_needed = int(abs(calorie_total / default_adjustment)) if default_adjustment != 0 else 0
+    end_date = datetime.date.today() + datetime.timedelta(days=days_needed)
+    target_calories = tdee + default_adjustment
+
+    st.write(f"🎯 At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+    projected_weights = [weight - (default_adjustment * d / 7700) for d in range(days_needed + 1)]
+    dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
+
+# ----- GRAPH -----
 st.subheader("📈 Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
-fig.update_layout(yaxis_title="Weight (kg)", xaxis_title="Date", height=400)
+fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
 st.plotly_chart(fig, use_container_width=True)
