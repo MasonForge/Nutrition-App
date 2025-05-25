@@ -52,7 +52,7 @@ st.subheader("📊 Results")
 st.write(f"BMR: **{int(bmr)} kcal/day**")
 st.write(f"TDEE (Maintenance): **{int(tdee)} kcal/day**")
 
-# Convert display units back to kg
+# Convert target weight to kg if needed
 if units == "Imperial (lbs/in)":
     target_weight_kg = target_weight / 2.20462
 else:
@@ -73,6 +73,8 @@ if override:
 
     st.write(f"🎯 To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
     projected_weights = [weight - (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
+    if units == "Imperial (lbs/in)":
+        projected_weights = [w * 2.20462 for w in projected_weights]
     dates = [start_date + datetime.timedelta(days=i) for i in range(days_available + 1)]
 
 # ----- OVERRIDE OFF: Use 500 kcal/day and calculate time to reach goal -----
@@ -86,6 +88,8 @@ else:
 
     st.write(f"🎯 At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
     projected_weights = [weight - (default_adjustment * d / 7700) for d in range(days_needed + 1)]
+    if units == "Imperial (lbs/in)":
+        projected_weights = [w * 2.20462 for w in projected_weights]
     dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
 
 # ----- GRAPH -----
