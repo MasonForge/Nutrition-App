@@ -34,12 +34,13 @@ activity_levels = {
     "Very active (physical job + exercise)": 1.9
 }
 activity = st.selectbox("Activity Level", list(activity_levels.keys()))
-goal = st.radio("Goal", ["Maintain", "Lose Weight", "Gain Muscle"])
 
+# ----- GOAL + TARGET WEIGHT + OVERRIDE -----
+goal = st.radio("Goal", ["Maintain", "Lose Weight", "Gain Muscle"])
 target_weight = st.number_input(f"Target Weight ({weight_unit})", min_value=30.0, value=display_weight)
 override = st.checkbox("Enable User Override")
 
-# ----- CALCULATIONS -----
+# ----- BMR & TDEE -----
 if gender == "Male":
     bmr = 10 * weight + 6.25 * height - 5 * age + 5
 else:
@@ -58,10 +59,11 @@ if units == "Imperial (lbs/in)":
 else:
     target_weight_kg = target_weight
 
-# ----- OVERRIDE ON: Set goal date, calculate calories needed -----
+# ----- OVERRIDE ON: Custom Goal Date -----
 if override:
-    goal_date = st.date_input("Goal Date", datetime.date.today() + datetime.timedelta(days=60))
     start_date = datetime.date.today()
+    st.markdown(f"**Start Date:** {start_date.strftime('%Y-%m-%d')}")
+    goal_date = st.date_input("Goal Date", start_date + datetime.timedelta(days=60))
     days_available = max((goal_date - start_date).days, 1)
 
     weight_diff_kg = weight - target_weight_kg
@@ -72,12 +74,13 @@ if override:
     st.warning("⚠️ User Override Active: You are manually adjusting your calorie goal. Please consult a qualified health professional before making any changes to your diet or nutrition plan.")
 
     st.write(f"🎯 To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
+
     projected_weights = [weight - (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
     if units == "Imperial (lbs/in)":
         projected_weights = [w * 2.20462 for w in projected_weights]
     dates = [start_date + datetime.timedelta(days=i) for i in range(days_available + 1)]
 
-# ----- OVERRIDE OFF: Use 500 kcal/day and calculate time to reach goal -----
+# ----- OVERRIDE OFF: Default Calorie Adjustment -----
 else:
     calorie_change_per_day = default_adjustment
     weight_diff_kg = weight - target_weight_kg
@@ -87,6 +90,7 @@ else:
     target_calories = tdee + default_adjustment
 
     st.write(f"🎯 At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+
     projected_weights = [weight - (default_adjustment * d / 7700) for d in range(days_needed + 1)]
     if units == "Imperial (lbs/in)":
         projected_weights = [w * 2.20462 for w in projected_weights]
