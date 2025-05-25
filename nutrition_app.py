@@ -73,7 +73,7 @@ if override:
     calorie_change_per_day = calorie_total / days_available
     target_calories = tdee + calorie_change_per_day
 
-    st.warning("Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
+    st.warning("\u26a0\ufe0f Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
     st.write(f"To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
 
     projected_weights = [weight + (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
