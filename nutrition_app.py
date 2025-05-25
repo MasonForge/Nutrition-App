@@ -1,10 +1,14 @@
 import streamlit as st
 import datetime
 import plotly.graph_objs as go
+from fpdf import FPDF
+import os
+
+st.set_page_config(page_title="Eat4Goals", layout="centered")
 
 # ----- PAGE SETUP -----
 st.title("Eat4Goals — Nutrition Calculator")
-st.warning("⚠️ Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. **Some numbers are rounded for clarity and may not reflect exact daily fluctuations.**")
+st.warning("\u26a0\ufe0f Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. Some numbers are rounded for clarity and may not reflect exact daily fluctuations.")
 
 # ----- UNIT SELECTION -----
 units = st.radio("Units", ["Metric (kg/cm)", "Imperial (lbs/in)"])
@@ -48,21 +52,17 @@ else:
 tdee = bmr * activity_levels[activity]
 default_adjustment = -500 if goal == "Lose Weight" else 500
 
-st.subheader("📊 Results")
+st.subheader("\ud83d\udcca Results")
 st.write(f"BMR: **{int(bmr)} kcal/day**")
 st.write(f"TDEE (Maintenance): **{int(tdee)} kcal/day**")
 
-# Convert target weight to kg if needed
 if units == "Imperial (lbs/in)":
     target_weight_kg = target_weight / 2.20462
 else:
     target_weight_kg = target_weight
 
-# Init for graph
-dates = []
-projected_weights = []
+dates, projected_weights = [], []
 
-# ----- OVERRIDE MODE -----
 if override:
     start_date = st.date_input("Start Date", datetime.date.today())
     goal_date = st.date_input("Goal Date", start_date + datetime.timedelta(days=60))
@@ -73,24 +73,21 @@ if override:
     calorie_change_per_day = calorie_total / days_available
     target_calories = tdee + calorie_change_per_day
 
-    st.warning("⚠️ User Override Active: You are manually adjusting your calorie goal.")
-    st.write(f"🎯 To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
+    st.warning("\u26a0\ufe0f Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
+    st.write(f"\ud83c\udf1f To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
 
     projected_weights = [weight + (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
     if units == "Imperial (lbs/in)":
         projected_weights = [w * 2.20462 for w in projected_weights]
     dates = [start_date + datetime.timedelta(days=i) for i in range(days_available + 1)]
-
-# ----- DEFAULT MODE -----
 else:
     weight_diff_kg = target_weight_kg - weight
     calorie_total = weight_diff_kg * 7700
-    calorie_change_per_day = default_adjustment
     days_needed = int(abs(calorie_total / default_adjustment)) if default_adjustment != 0 else 0
     end_date = datetime.date.today() + datetime.timedelta(days=days_needed)
     target_calories = tdee + default_adjustment
 
-    st.write(f"🎯 At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+    st.write(f"\ud83c\udf1f At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
 
     projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
     if units == "Imperial (lbs/in)":
@@ -98,21 +95,16 @@ else:
     dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
 
 # ----- GRAPH -----
-st.subheader("📈 Projected Weight Over Time")
+st.subheader("\ud83d\udcc8 Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
 fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
 st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
-st.subheader("🥦 Macronutrient Breakdown")
+st.subheader("\ud83e\udd66 Macronutrient Breakdown")
+macro_mode = st.selectbox("Select Macro Strategy", ["NASM (Default)", "Mentzer (60/25/15)", "High-Protein (35/35/30)", "Keto (10/20/70)", "Custom"])
 
-macro_mode = st.selectbox(
-    "Select Macro Strategy",
-    ["NASM (Default)", "Mentzer (60/25/15)", "High-Protein (35/35/30)", "Keto (10/20/70)", "Custom"]
-)
-
-# Set macro split by preset
 if macro_mode == "NASM (Default)":
     protein_pct, carb_pct, fat_pct = 20, 50, 30
 elif macro_mode == "Mentzer (60/25/15)":
@@ -129,7 +121,7 @@ else:
 
 total_pct = protein_pct + carb_pct + fat_pct
 if total_pct != 100:
-    st.error("Macronutrient percentages must add up to 100%. Please adjust your sliders.")
+    st.error("Macronutrient percentages must add up to 100%.")
 else:
     protein_kcal = (protein_pct / 100) * target_calories
     carb_kcal = (carb_pct / 100) * target_calories
@@ -141,13 +133,12 @@ else:
 
     st.markdown(f"""
     **Daily Targets:**
-    - 🥩 Protein: **{int(protein_g)}g** ({int(protein_kcal)} kcal)
-    - 🍞 Carbs: **{int(carb_g)}g** ({int(carb_kcal)} kcal)
-    - 🥑 Fats: **{int(fat_g)}g** ({int(fat_kcal)} kcal)
+    - \ud83e\udd69 Protein: **{int(protein_g)}g** ({int(protein_kcal)} kcal)
+    - \ud83e\udd5e Carbs: **{int(carb_g)}g** ({int(carb_kcal)} kcal)
+    - \ud83e\udd51 Fats: **{int(fat_g)}g** ({int(fat_kcal)} kcal)
     """)
 
-    # ----- MEAL MACRO PLANNER -----
-    st.subheader("🍽️ Generate Meal Macros Plan")
+    st.subheader("\ud83c\udf7d\ufe0f Generate Meal Macros Plan")
     meals_per_day = st.selectbox("How many meals per day?", [1, 2, 3, 4, 5, 6], index=2)
 
     meal_protein = protein_g / meals_per_day
@@ -157,9 +148,41 @@ else:
 
     st.markdown(f"""
     **Per Meal (~{meals_per_day} meals/day):**
-    - 🔹 Calories: **{int(meal_calories)} kcal**
-    - 🔹 Protein: **{round(meal_protein, 1)}g**
-    - 🔹 Carbs: **{round(meal_carb, 1)}g**
-    - 🔹 Fats: **{round(meal_fat, 1)}g**
+    - \ud83d\udd39 Calories: **{int(meal_calories)} kcal**
+    - \ud83d\udd39 Protein: **{round(meal_protein, 1)}g**
+    - \ud83d\udd39 Carbs: **{round(meal_carb, 1)}g**
+    - \ud83d\udd39 Fats: **{round(meal_fat, 1)}g**
     """)
 
+    # ----- PDCAAS Placeholder -----
+    st.info("\ud83d\udcca Protein Quality (PDCAAS): This feature is not yet enabled. In a future update, we'll analyze the quality of your protein sources using PDCAAS scoring.")
+
+    # ----- PDF DOWNLOAD -----
+    if st.button("\ud83d\udd16 Download Nutrition Report (PDF)"):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Eat4Goals Nutrition Summary", ln=True, align="C")
+        pdf.ln(10)
+        pdf.cell(200, 10, txt=f"Daily Calories: {int(target_calories)} kcal", ln=True)
+        pdf.cell(200, 10, txt=f"Protein: {int(protein_g)}g ({int(protein_kcal)} kcal)", ln=True)
+        pdf.cell(200, 10, txt=f"Carbs: {int(carb_g)}g ({int(carb_kcal)} kcal)", ln=True)
+        pdf.cell(200, 10, txt=f"Fats: {int(fat_g)}g ({int(fat_kcal)} kcal)", ln=True)
+        pdf.ln(10)
+        pdf.cell(200, 10, txt=f"Per Meal ({meals_per_day} meals/day):", ln=True)
+        pdf.cell(200, 10, txt=f"Calories: {int(meal_calories)} kcal", ln=True)
+        pdf.cell(200, 10, txt=f"Protein: {round(meal_protein,1)}g", ln=True)
+        pdf.cell(200, 10, txt=f"Carbs: {round(meal_carb,1)}g", ln=True)
+        pdf.cell(200, 10, txt=f"Fats: {round(meal_fat,1)}g", ln=True)
+        pdf.ln(10)
+        pdf.cell(200, 10, txt="PDCAAS scoring not yet included. This feature is coming soon.", ln=True)
+        pdf_path = "Eat4Goals_Nutrition_Report.pdf"
+        pdf.output(pdf_path)
+        with open(pdf_path, "rb") as f:
+            st.download_button(
+                label="Download Report",
+                data=f,
+                file_name=pdf_path,
+                mime="application/pdf"
+            )
+        os.remove(pdf_path)
