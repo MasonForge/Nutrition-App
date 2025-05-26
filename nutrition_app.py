@@ -154,8 +154,78 @@ else:
     -  Fats: **{round(meal_fat, 1)}g**
     """)
 
-    # ----- PDCAAS Placeholder -----
-    st.info(" Protein Quality (PDCAAS): This feature is not yet enabled. In a future update, we'll analyze the quality of your protein sources using PDCAAS scoring.")
+# ----- MEAL 1: DIAAS CALCULATOR -----
+st.subheader("Meal 1 — Protein Quality (DIAAS Adjusted)")
+
+# Try to load the food database
+try:
+    with open("meal1_food_database.json", "r") as f:
+        food_db = json.load(f)
+except FileNotFoundError:
+    st.error("'meal1_food_database.json' not found. Please upload or include it in your repo.")
+    food_db = {}
+
+# Initialize session state for dynamic food rows
+if "meal1_items" not in st.session_state:
+    st.session_state.meal1_items = [{"food": "", "amount": 100.0}]
+
+# Button to add another food
+if st.button("Add Another Food to Meal 1"):
+    st.session_state.meal1_items.append({"food": "", "amount": 100.0})
+
+# Totals
+total_protein = 0
+total_usable_protein = 0
+total_carbs = 0
+total_fats = 0
+total_calories = 0
+
+st.markdown("Add Foods to Meal 1")
+
+for idx, item in enumerate(st.session_state.meal1_items):
+    cols = st.columns([3, 2, 1])
+    
+    # Food selector
+    item["food"] = cols[0].selectbox(
+        f"Food {idx + 1}", 
+        [""] + list(food_db.keys()), 
+        index=0 if item["food"] == "" else list(food_db.keys()).index(item["food"])
+    )
+    
+    # Amount input
+    item["amount"] = cols[1].number_input(
+        f"Amount (grams) for Food {idx + 1}", 
+        min_value=0.0, 
+        value=item["amount"], 
+        step=10.0
+    )
+
+    # If food is selected, calculate macros
+    if item["food"] in food_db:
+        food = food_db[item["food"]]
+        multiplier = item["amount"] / 100
+
+        protein = food["protein"] * multiplier
+        usable_protein = protein * (food["diaas"] / 100)
+        carbs = food["carbs"] * multiplier
+        fats = food["fats"] * multiplier
+        calories = food["calories"] * multiplier
+
+        total_protein += protein
+        total_usable_protein += usable_protein
+        total_carbs += carbs
+        total_fats += fats
+        total_calories += calories
+
+        cols[2].markdown(f"DIAAS: {food['diaas']}%")
+
+# Show meal totals
+st.markdown("Meal 1 Totals")
+st.write(f"Protein: {total_protein:.1f} g")
+st.write(f"Usable Protein (DIAAS-adjusted): {total_usable_protein:.1f} g")
+st.write(f"Carbs: {total_carbs:.1f} g")
+st.write(f"Fats: {total_fats:.1f} g")
+st.write(f"Calories: {total_calories:.0f} kcal")
 
     # ----- PDF DOWNLOAD -----
     if st.button(" Download Nutrition Report (PDF)"):
