@@ -1,0 +1,51 @@
+{
+  "Chicken Breast": {
+    "protein": 31,
+    "carbs": 0,
+    "fats": 3.6,
+    "calories": 165,
+    "diaas": 108
+  },
+  "Eggs": {
+    "protein": 13,
+    "carbs": 1.1,
+    "fats": 11,
+    "calories": 143,
+    "diaas": 113
+  },
+  "Walnuts": {
+    "protein": 15,
+    "carbs": 14,
+    "fats": 65,
+    "calories": 654,
+    "diaas": 48
+  },
+  "Rice (white, cooked)": {
+    "protein": 2.7,
+    "carbs": 28,
+    "fats": 0.3,
+    "calories": 130,
+    "diaas": 59
+  },
+  "Black Beans (cooked)": {
+    "protein": 8.9,
+    "carbs": 23.7,
+    "fats": 0.5,
+    "calories": 132,
+    "diaas": 64
+  },
+  "Whey Protein Isolate": {
+    "protein": 90,
+    "carbs": 2,
+    "fats": 1,
+    "calories": 370,
+    "diaas": 109
+  },
+  "Whole Milk": {
+    "protein": 3.4,
+    "carbs": 4.8,
+    "fats": 3.7,
+    "calories": 61,
+    "diaas": 114
+  }
+}
