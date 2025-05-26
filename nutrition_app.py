@@ -8,7 +8,7 @@ st.set_page_config(page_title="Eat4Goals", layout="centered")
 
 # ----- PAGE SETUP -----
 st.title("Eat4Goals — Nutrition Calculator")
-st.warning("\u26a0\ufe0f Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. Some numbers are rounded for clarity and may not reflect exact daily fluctuations.")
+st.warning(" Disclaimer: This calculator is for general informational purposes only and is not intended to provide medical, nutritional, or dietary advice. Always consult a qualified health professional before making any changes to your diet, exercise routine, or wellness plan. Some numbers are rounded for clarity and may not reflect exact daily fluctuations.")
 
 # ----- UNIT SELECTION -----
 units = st.radio("Units", ["Metric (kg/cm)", "Imperial (lbs/in)"])
@@ -52,7 +52,7 @@ else:
 tdee = bmr * activity_levels[activity]
 default_adjustment = -500 if goal == "Lose Weight" else 500
 
-st.subheader("\ud83d\udcca Results")
+st.subheader(" Results")
 st.write(f"BMR: **{int(bmr)} kcal/day**")
 st.write(f"TDEE (Maintenance): **{int(tdee)} kcal/day**")
 
@@ -73,8 +73,8 @@ if override:
     calorie_change_per_day = calorie_total / days_available
     target_calories = tdee + calorie_change_per_day
 
-    st.warning("\u26a0\ufe0f Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
-    st.write(f"\ud83c\udf1f To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
+    st.warning(" Manual Override Active: Your selected calorie goal may fall outside commonly recommended ranges for safe and effective weight change.")
+    st.write(f" To reach **{target_weight:.1f} {weight_unit}** by **{goal_date.strftime('%b %d, %Y')}**, you need to eat **{int(target_calories)} kcal/day**")
 
     projected_weights = [weight + (calorie_change_per_day * d / 7700) for d in range(days_available + 1)]
     if units == "Imperial (lbs/in)":
@@ -87,7 +87,7 @@ else:
     end_date = datetime.date.today() + datetime.timedelta(days=days_needed)
     target_calories = tdee + default_adjustment
 
-    st.write(f"\ud83c\udf1f At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+    st.write(f" At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
 
     projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
     if units == "Imperial (lbs/in)":
@@ -95,14 +95,14 @@ else:
     dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
 
 # ----- GRAPH -----
-st.subheader("\ud83d\udcc8 Projected Weight Over Time")
+st.subheader(" Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
 fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
 st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
-st.subheader("\ud83e\udd66 Macronutrient Breakdown")
+st.subheader(" Macronutrient Breakdown")
 macro_mode = st.selectbox("Select Macro Strategy", ["NASM (Default)", "Mentzer (60/25/15)", "High-Protein (35/35/30)", "Keto (10/20/70)", "Custom"])
 
 if macro_mode == "NASM (Default)":
@@ -133,12 +133,12 @@ else:
 
     st.markdown(f"""
     **Daily Targets:**
-    - \ud83e\udd69 Protein: **{int(protein_g)}g** ({int(protein_kcal)} kcal)
-    - \ud83e\udd5e Carbs: **{int(carb_g)}g** ({int(carb_kcal)} kcal)
-    - \ud83e\udd51 Fats: **{int(fat_g)}g** ({int(fat_kcal)} kcal)
+    -  Protein: **{int(protein_g)}g** ({int(protein_kcal)} kcal)
+    -  Carbs: **{int(carb_g)}g** ({int(carb_kcal)} kcal)
+    -  Fats: **{int(fat_g)}g** ({int(fat_kcal)} kcal)
     """)
 
-    st.subheader("\ud83c\udf7d\ufe0f Generate Meal Macros Plan")
+    st.subheader(" Generate Meal Macros Plan")
     meals_per_day = st.selectbox("How many meals per day?", [1, 2, 3, 4, 5, 6], index=2)
 
     meal_protein = protein_g / meals_per_day
@@ -148,17 +148,17 @@ else:
 
     st.markdown(f"""
     **Per Meal (~{meals_per_day} meals/day):**
-    - \ud83d\udd39 Calories: **{int(meal_calories)} kcal**
-    - \ud83d\udd39 Protein: **{round(meal_protein, 1)}g**
-    - \ud83d\udd39 Carbs: **{round(meal_carb, 1)}g**
-    - \ud83d\udd39 Fats: **{round(meal_fat, 1)}g**
+    -  Calories: **{int(meal_calories)} kcal**
+    -  Protein: **{round(meal_protein, 1)}g**
+    -  Carbs: **{round(meal_carb, 1)}g**
+    -  Fats: **{round(meal_fat, 1)}g**
     """)
 
     # ----- PDCAAS Placeholder -----
-    st.info("\ud83d\udcca Protein Quality (PDCAAS): This feature is not yet enabled. In a future update, we'll analyze the quality of your protein sources using PDCAAS scoring.")
+    st.info(" Protein Quality (PDCAAS): This feature is not yet enabled. In a future update, we'll analyze the quality of your protein sources using PDCAAS scoring.")
 
     # ----- PDF DOWNLOAD -----
-    if st.button("\ud83d\udd16 Download Nutrition Report (PDF)"):
+    if st.button(" Download Nutrition Report (PDF)"):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
