@@ -83,7 +83,7 @@ if override:
 else:
     weight_diff_kg = target_weight_kg - weight
     calorie_total = weight_diff_kg * 7700
-    days_needed = int(abs(calorie_total / default_adjustment)) if default_adjustment != 0 else 0
+    days_needed = int(abs(calorie_total / default_adjustment)) if default_adjustment != 0 else 1
     end_date = datetime.date.today() + datetime.timedelta(days=days_needed)
     target_calories = tdee + default_adjustment
 
@@ -96,10 +96,10 @@ else:
 
     st.write(f"You’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
 
-projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
-if units == "Imperial (lbs/in)":
-    projected_weights = [w * 2.20462 for w in projected_weights]
-dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
+    projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
+    if units == "Imperial (lbs/in)":
+        projected_weights = [w * 2.20462 for w in projected_weights]
+    dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
 
 # ----- GRAPH -----
 st.subheader("Projected Weight Over Time")
