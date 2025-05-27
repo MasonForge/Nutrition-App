@@ -87,12 +87,19 @@ else:
     end_date = datetime.date.today() + datetime.timedelta(days=days_needed)
     target_calories = tdee + default_adjustment
 
-    st.write(f"At **{abs(default_adjustment)} kcal/day**, you’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+    if goal == "Lose Weight":
+        st.write(f"At a daily deficit of **{abs(default_adjustment)} kcal**, your target intake is **{int(target_calories)} kcal/day**.")
+    elif goal == "Gain Muscle":
+        st.write(f"At a daily surplus of **{abs(default_adjustment)} kcal**, your target intake is **{int(target_calories)} kcal/day**.")
+    else:
+        st.write(f"To maintain your weight, your target intake is **{int(target_calories)} kcal/day**.")
 
-    projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
-    if units == "Imperial (lbs/in)":
-        projected_weights = [w * 2.20462 for w in projected_weights]
-    dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
+    st.write(f"You’ll reach **{target_weight:.1f} {weight_unit}** in approximately **{days_needed} days** (~{end_date.strftime('%b %d, %Y')})")
+
+projected_weights = [weight + (default_adjustment * d / 7700) for d in range(days_needed + 1)]
+if units == "Imperial (lbs/in)":
+    projected_weights = [w * 2.20462 for w in projected_weights]
+dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(days_needed + 1)]
 
 # ----- GRAPH -----
 st.subheader("Projected Weight Over Time")
