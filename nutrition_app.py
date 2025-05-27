@@ -126,6 +126,7 @@ elif macro_mode == "MM (25/60/15)":
 elif macro_mode == "MM FEMALE (32/45/23)":
     protein_pct, carb_pct, fat_pct = 32, 45, 23
     st.info("Macros adapted for women's hormonal balance and energy.")
+    st.warning("These numbers are educated guesses, not medical advice.")
 elif macro_mode == "High-Protein (50/20/30)":
     protein_pct, carb_pct, fat_pct = 50, 20, 30
 elif macro_mode == "PSMF (70/10/20)":
