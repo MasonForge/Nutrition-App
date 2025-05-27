@@ -117,18 +117,21 @@ st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
 st.subheader("Macronutrient Breakdown")
-macro_mode = st.selectbox("Select Macro Strategy", ["Default (20/50/30)", "MM (60/25/15)", "High-Protein (50/20/30)", "Higher-Protein (60/20/20)", "Keto (10/20/70)", "Custom"])
+macro_mode = st.selectbox("Select Macro Strategy", ["Default (20/50/30)", "MM (25/60/15)", "MM FEMALE (32/45/23)", "High-Protein (50/20/30)", "PSMF (70/10/20)", "Keto (25/5/70)", "Custom"])
 
 if macro_mode == "Default (20/50/30)":
     protein_pct, carb_pct, fat_pct = 20, 50, 30
-elif macro_mode == "MM (60/25/15)":
+elif macro_mode == "MM (25/60/15)":
     protein_pct, carb_pct, fat_pct = 25, 60, 15
+elif macro_mode == "MM FEMALE (32/45/23)":
+    protein_pct, carb_pct, fat_pct = 32, 45, 23
 elif macro_mode == "High-Protein (50/20/30)":
     protein_pct, carb_pct, fat_pct = 50, 20, 30
-elif macro_mode == "Higher-Protein (60/20/20)":
-    protein_pct, carb_pct, fat_pct = 60, 20, 20    
-elif macro_mode == "Keto (10/20/70)":
-    protein_pct, carb_pct, fat_pct = 20, 10, 70
+elif macro_mode == "PSMF (70/10/20)":
+    protein_pct, carb_pct, fat_pct = 70, 10, 20    
+    st.warning("⚠️ PSMF is a very low-fat, low-carb protocol intended for short-term use only. Prolonged use without supervision may lead to hormonal or metabolic issues.")
+elif macro_mode == "Keto (25/5/70)":
+    protein_pct, carb_pct, fat_pct = 25, 5, 70
 else:
     st.info("Customize your macronutrient percentages below.")
     protein_pct = st.slider("Protein %", 0, 100, 25)
