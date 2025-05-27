@@ -131,7 +131,7 @@ elif macro_mode == "High-Protein (50/20/30)":
     protein_pct, carb_pct, fat_pct = 50, 20, 30
 elif macro_mode == "PSMF (70/10/20)":
     protein_pct, carb_pct, fat_pct = 70, 10, 20    
-    st.warning("⚠️ PSMF is a very low-fat, low-carb protocol intended for short-term use only. Prolonged use without supervision may lead to hormonal or metabolic issues.")
+    st.warning("⚠️ PSMF is a very low-fat, low-carb protocol intended for short-term use only. Consult a professional.")
 elif macro_mode == "Keto (25/5/70)":
     protein_pct, carb_pct, fat_pct = 25, 5, 70
 else:
