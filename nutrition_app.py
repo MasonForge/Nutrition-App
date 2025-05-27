@@ -99,7 +99,7 @@ else:
 st.subheader("Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
-fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
+fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400, dragmode=False)", xaxis_title="Date", height=400)
 st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
@@ -202,10 +202,10 @@ else:
                 food_db = {}
 
             if "meal1_items" not in st.session_state:
-                st.session_state.meal1_items = [{"food": "", "amount": 100.0}]
+                st.session_state.meal1_items = [{"food": "", "amount": 100.0, "unit": "grams"}]
 
             if st.button("Add Another Food to Meal 1"):
-                st.session_state.meal1_items.append({"food": "", "amount": 100.0})
+                st.session_state.meal1_items.append({"food": "", "amount": 100.0, "unit": "grams"})
 
             total_protein = 0
             total_usable_protein = 0
@@ -216,22 +216,24 @@ else:
             st.markdown("Add Foods to Meal 1")
 
             for idx, item in enumerate(st.session_state.meal1_items):
-                cols = st.columns([3, 2, 1])
+                cols = st.columns([3, 2, 2, 1])
                 item["food"] = cols[0].selectbox(
                     f"Food {idx + 1}",
                     [""] + list(food_db.keys()),
                     index=0 if item["food"] == "" else list(food_db.keys()).index(item["food"])
                 )
                 item["amount"] = cols[1].number_input(
-                    f"Amount (grams) for Food {idx + 1}",
+                    f"Amount for Food {idx + 1}",
                     min_value=0.0,
                     value=item["amount"],
                     step=10.0
                 )
+                item["unit"] = cols[2].selectbox(f"Unit {idx + 1}", ["grams", "ounces"], index=0 if item["unit"] == "grams" else 1)
 
                 if item["food"] in food_db:
                     food = food_db[item["food"]]
-                    multiplier = item["amount"] / 100
+                    grams = item["amount"] * (28.3495 if item["unit"] == "ounces" else 1)
+                    multiplier = grams / 100
 
                     protein = food["protein"] * multiplier
                     usable_protein = protein * (food["diaas"] / 100)
@@ -245,7 +247,7 @@ else:
                     total_fats += fats
                     total_calories += calories
 
-                    cols[2].markdown(f"DIAAS: {food['diaas']}%")
+                    cols[3].markdown(f"DIAAS: {food['diaas']}%")
 
             st.markdown("Meal 1 Totals")
             st.write(f"Protein: {total_protein:.1f} g")
