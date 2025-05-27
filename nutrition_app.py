@@ -98,7 +98,14 @@ else:
 st.subheader("Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
-fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
+fig.update_layout(
+    yaxis_title=f"Weight ({weight_unit})",
+    xaxis_title="Date",
+    height=400,
+    dragmode=False,  # Disables dragging
+    xaxis=dict(fixedrange=True),  # Disables zooming/panning on x-axis
+    yaxis=dict(fixedrange=True)   # Disables zooming/panning on y-axis
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
