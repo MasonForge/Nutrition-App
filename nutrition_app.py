@@ -117,14 +117,16 @@ st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
 st.subheader("Macronutrient Breakdown")
-macro_mode = st.selectbox("Select Macro Strategy", ["Default (20/50/30)", "MM (60/25/15)", "High-Protein (60/20/20)", "Keto (10/20/70)", "Custom"])
+macro_mode = st.selectbox("Select Macro Strategy", ["Default (20/50/30)", "MM (60/25/15)", "High-Protein (50/20/30)", "Higher-Protein (60/20/20)", "Keto (10/20/70)", "Custom"])
 
 if macro_mode == "Default (20/50/30)":
     protein_pct, carb_pct, fat_pct = 20, 50, 30
 elif macro_mode == "MM (60/25/15)":
     protein_pct, carb_pct, fat_pct = 25, 60, 15
-elif macro_mode == "High-Protein (60/20/20)":
-    protein_pct, carb_pct, fat_pct = 60, 20, 20
+elif macro_mode == "High-Protein (50/20/30)":
+    protein_pct, carb_pct, fat_pct = 50, 20, 30
+elif macro_mode == "Higher-Protein (60/20/20)":
+    protein_pct, carb_pct, fat_pct = 60, 20, 20    
 elif macro_mode == "Keto (10/20/70)":
     protein_pct, carb_pct, fat_pct = 20, 10, 70
 else:
