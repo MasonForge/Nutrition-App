@@ -3,7 +3,6 @@ import datetime
 import plotly.graph_objs as go
 from fpdf import FPDF
 import os
-import json
 
 st.set_page_config(page_title="Eat4Goals", layout="centered")
 
@@ -99,14 +98,14 @@ else:
 st.subheader("Projected Weight Over Time")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dates, y=projected_weights, mode='lines+markers', name='Projected Weight'))
-fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400, dragmode=False)
+fig.update_layout(yaxis_title=f"Weight ({weight_unit})", xaxis_title="Date", height=400)
 st.plotly_chart(fig, use_container_width=True)
 
 # ----- MACRONUTRIENT BREAKDOWN -----
 st.subheader("Macronutrient Breakdown")
-macro_mode = st.selectbox("Select Macro Strategy", ["(Default)", "MM (60/25/15)", "High-Protein (35/35/30)", "Keto (10/20/70)", "Custom"])
+macro_mode = st.selectbox("Select Macro Strategy", ["Default", "MM (60/25/15)", "High-Protein (35/35/30)", "Keto (10/20/70)", "Custom"])
 
-if macro_mode == "(Default)":
+if macro_mode == "Default":
     protein_pct, carb_pct, fat_pct = 20, 50, 30
 elif macro_mode == "MM (60/25/15)":
     protein_pct, carb_pct, fat_pct = 25, 60, 15
@@ -155,107 +154,8 @@ else:
     - Fats: **{round(meal_fat, 1)}g**
     """)
 
-    # ----- DIAAS CALCULATOR DISCLAIMER & TRIGGER -----
-    show_diaas = st.checkbox("Show DIAAS Protein Quality Calculator")
-
-    if show_diaas:
-        st.markdown("""
-        ### 💡 Before You Begin — Understanding Protein Quality & DIAAS
-
-        This tool helps you understand not just how much protein you’re eating, but how much of it your body can actually use. It does this using a measurement called DIAAS (Digestible Indispensable Amino Acid Score).
-
-        ### 🧠 What You Need to Know First:
-
-        - DIAAS measures protein quality based on:
-          - The essential amino acids (EAAs) in the food
-          - How well your body can digest and absorb them
-
-        - The % Daily Value (%DV) for protein you see on food labels does not use DIAAS.  
-          It’s based on an older system called PDCAAS, which may misrepresent the real quality of a protein — especially in processed or plant-based foods.
-
-        - If a food says “7g protein” but only “8% DV,” it likely means only about 4g of that protein is truly usable — and the rest is incomplete or poorly digested.
-
-        ### 🧾 Manual Entry Mode Note:
-        If you enter your own food data manually, you can estimate DIAAS using:
-
-            Estimated DIAAS = %DV ÷ 2
-
-        But this is not scientifically accurate and should only be used when real DIAAS values aren’t available. The best option is to select foods from the built-in list when possible.
-
-        ### 🔒 Disclaimer Summary:
-        - This calculator is for informational and educational use only
-        - It does not provide medical or dietary advice
-        - All information provided by this tool should be considered an estimate and has not been independently verified for accuracy.
-        """)
-
-        if st.checkbox("I have read and understand this information"):
-            st.success("[Continue to Calculator]")
-
-            # ----- MEAL 1: DIAAS CALCULATOR -----
-            st.subheader("Meal 1 — Protein Quality (DIAAS Adjusted)")
-
-            try:
-                with open("meal1_food_database.json", "r") as f:
-                    food_db = json.load(f)
-            except FileNotFoundError:
-                st.error("'meal1_food_database.json' not found. Please upload or include it in your repo.")
-                food_db = {}
-
-            if "meal1_items" not in st.session_state:
-                st.session_state.meal1_items = [{"food": "", "amount": 100.0, "unit": "grams"}]
-
-            if st.button("Add Another Food to Meal 1"):
-                st.session_state.meal1_items.append({"food": "", "amount": 100.0, "unit": "grams"})
-
-            total_protein = 0
-            total_usable_protein = 0
-            total_carbs = 0
-            total_fats = 0
-            total_calories = 0
-
-            st.markdown("Add Foods to Meal 1")
-
-            for idx, item in enumerate(st.session_state.meal1_items):
-                cols = st.columns([3, 2, 2, 1])
-                item["food"] = cols[0].selectbox(
-                    f"Food {idx + 1}",
-                    [""] + list(food_db.keys()),
-                    index=0 if item["food"] == "" else list(food_db.keys()).index(item["food"])
-                )
-                item["amount"] = cols[1].number_input(
-                    f"Amount for Food {idx + 1}",
-                    min_value=0.0,
-                    value=item["amount"],
-                    step=10.0
-                )
-                item["unit"] = cols[2].selectbox(f"Unit {idx + 1}", ["grams", "ounces"], index=0 if item["unit"] == "grams" else 1)
-
-                if item["food"] in food_db:
-                    food = food_db[item["food"]]
-                    grams = item["amount"] * (28.3495 if item["unit"] == "ounces" else 1)
-                    multiplier = grams / 100
-
-                    protein = food["protein"] * multiplier
-                    usable_protein = protein * (food["diaas"] / 100)
-                    carbs = food["carbs"] * multiplier
-                    fats = food["fats"] * multiplier
-                    calories = food["calories"] * multiplier
-
-                    total_protein += protein
-                    total_usable_protein += usable_protein
-                    total_carbs += carbs
-                    total_fats += fats
-                    total_calories += calories
-
-                    cols[3].markdown(f"DIAAS: {food['diaas']}%")
-
-            st.markdown("Meal 1 Totals")
-            st.write(f"Protein: {total_protein:.1f} g")
-            st.write(f"Usable Protein (DIAAS-adjusted): {total_usable_protein:.1f} g")
-            st.write(f"Carbs: {total_carbs:.1f} g")
-            st.write(f"Fats: {total_fats:.1f} g")
-            st.write(f"Calories: {total_calories:.0f} kcal")
-
+    # ----- PDCAAS Placeholder -----
+   
     # ----- PDF DOWNLOAD -----
     if st.button("Download Nutrition Report (PDF)"):
         pdf = FPDF()
